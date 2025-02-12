@@ -728,7 +728,7 @@ mod tests {
         let prog = RedeemNode::<Elements>::decode(prog, witness).unwrap();
         assert_eq!(prog.cmr().to_byte_array(), test.cmr);
         assert_eq!(prog.amr().to_byte_array(), test.amr);
-        assert_eq!(prog.imr().to_byte_array(), test.imr);
+        assert_eq!(prog.imr().to_byte_array(), test.ihr);
         assert_eq!(prog.bounds().cost, Cost::from_milliweight(test.cost))
     }
 

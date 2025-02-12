@@ -309,8 +309,8 @@ pub mod dag {
         ) -> SimplicityErr;
 
         /// Computes the identity Merkle roots of every subexpression in a well-typed 'dag' with witnesses    .
-        pub fn simplicity_verifyNoDuplicateIdentityRoots(
-            imr: *mut CSha256Midstate,
+        pub fn simplicity_verifyNoDuplicateIdentityHashes(
+            ihr: *mut CSha256Midstate,
             dag: *const CDagNode,
             type_dag: *const CType,
             len: c_size_t,
@@ -476,7 +476,7 @@ extern "C" {
     pub static ctx8Pruned_witness: [u8; 0];
     pub static ctx8Pruned_amr: [u32; 8];
     pub static ctx8Pruned_cmr: [u32; 8];
-    pub static ctx8Pruned_imr: [u32; 8];
+    pub static ctx8Pruned_ihr: [u32; 8];
     pub static ctx8Pruned_cost: ubounded;
 
     pub static sizeof_ctx8Unpruned: c_size_t;
@@ -485,7 +485,7 @@ extern "C" {
     pub static ctx8Unpruned_witness: [u8; 0];
     pub static ctx8Unpruned_amr: [u32; 8];
     pub static ctx8Unpruned_cmr: [u32; 8];
-    pub static ctx8Unpruned_imr: [u32; 8];
+    pub static ctx8Unpruned_ihr: [u32; 8];
     pub static ctx8Unpruned_cost: ubounded;
 
     pub static sizeof_schnorr0: c_size_t;
@@ -494,7 +494,7 @@ extern "C" {
     pub static schnorr0_witness: [u8; 64];
     pub static schnorr0_amr: [u32; 8];
     pub static schnorr0_cmr: [u32; 8];
-    pub static schnorr0_imr: [u32; 8];
+    pub static schnorr0_ihr: [u32; 8];
     pub static schnorr0_cost: ubounded;
 
     pub static sizeof_schnorr6: c_size_t;
@@ -503,7 +503,7 @@ extern "C" {
     pub static schnorr6_witness: [u8; 64];
     pub static schnorr6_amr: [u32; 8];
     pub static schnorr6_cmr: [u32; 8];
-    pub static schnorr6_imr: [u32; 8];
+    pub static schnorr6_ihr: [u32; 8];
     pub static schnorr6_cost: ubounded;
 
     /*
@@ -512,13 +512,13 @@ extern "C" {
     pub static hashBlock: [u8; 3259];
     pub static hashBlock_amr: [u32; 8];
     pub static hashBlock_cmr: [u32; 8];
-    pub static hashBlock_imr: [u32; 8];
+    pub static hashBlock_ihr: [u32; 8];
 
     // FIXME enable this test; requires a little but of extra work to set up an Elements env
     pub static elementsCheckSigHashAllTx1: [u8; 1151];
     pub static elementsCheckSigHashAllTx1_amr: [u32; 8];
     pub static elementsCheckSigHashAllTx1_cmr: [u32; 8];
-    pub static elementsCheckSigHashAllTx1_imr: [u32; 8];
+    pub static elementsCheckSigHashAllTx1_ihr: [u32; 8];
     */
 }
 

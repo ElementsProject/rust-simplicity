@@ -9,7 +9,7 @@ use crate::tests::ffi::{
     bitstream::{simplicity_closeBitstream, CBitstream},
     dag::{
         simplicity_computeAnnotatedMerkleRoot, simplicity_fillWitnessData,
-        simplicity_verifyNoDuplicateIdentityRoots, CAnalyses, CCombinatorCounters,
+        simplicity_verifyNoDuplicateIdentityHashes, CAnalyses, CCombinatorCounters,
     },
     deserialize::simplicity_decodeMallocDag,
     eval::{simplicity_analyseBounds, simplicity_evalTCOProgram},
@@ -25,8 +25,8 @@ pub struct TestOutput {
     pub amr: CSha256Midstate,
     /// The CMR of the root node
     pub cmr: CSha256Midstate,
-    /// The IMR of the root node
-    pub imr: CSha256Midstate,
+    /// The IHR of the root node
+    pub ihr: CSha256Midstate,
     /// The cost bound of the program
     pub cost_bound: ubounded,
     /// Whether or not evaluation succeded
@@ -46,8 +46,8 @@ pub enum TestUpTo {
     FillWitnessData,
     /// Compute and retrieve the root AMR.
     ComputeAmr,
-    /// Compute and retrieve the root IMR; check that all IMRs are unique
-    ComputeImr,
+    /// Compute and retrieve the root IHR; check that all IHRs are unique
+    ComputeIhr,
     /// Compute and retrieve the expected cost without any bounds
     ComputeCostUnbounded,
     /// Compute and retrieve the expected cost with strict bounds
@@ -57,7 +57,7 @@ pub enum TestUpTo {
     /// Fail the analysis if insufficient budget is provided
     CheckBudget,
     /// Check that the program is 1-1. This will exclude arbitrary expressions, so
-    /// you may want to stop at `ComputeImr` to get the maximum merkle root coverage.
+    /// you may want to stop at `ComputeIhr` to get the maximum merkle root coverage.
     CheckOneOne,
     /// Evaluate the program and retrieve whether it succeded.
     Everything,
@@ -69,13 +69,13 @@ pub fn run_test(
     witness: &[u8],
     target_amr: &[u32; 8],
     target_cmr: &[u32; 8],
-    target_imr: &[u32; 8],
+    target_ihr: &[u32; 8],
     cost_bound: ubounded,
 ) {
     let result = run_program(program, witness, TestUpTo::Everything).expect("running program");
     assert_eq!(result.amr, CSha256Midstate { s: *target_amr });
     assert_eq!(result.cmr, CSha256Midstate { s: *target_cmr });
-    assert_eq!(result.imr, CSha256Midstate { s: *target_imr });
+    assert_eq!(result.ihr, CSha256Midstate { s: *target_ihr });
     assert_eq!(result.cost_bound, cost_bound);
     assert_eq!(result.eval_result, SimplicityErr::NoError);
 }
@@ -87,13 +87,13 @@ pub fn run_test_fail(
     target_result: SimplicityErr,
     target_amr: &[u32; 8],
     target_cmr: &[u32; 8],
-    target_imr: &[u32; 8],
+    target_ihr: &[u32; 8],
     cost_bound: ubounded,
 ) {
     let result = run_program(program, witness, TestUpTo::Everything).expect("running program");
     assert_eq!(result.amr, CSha256Midstate { s: *target_amr });
     assert_eq!(result.cmr, CSha256Midstate { s: *target_cmr });
-    assert_eq!(result.imr, CSha256Midstate { s: *target_imr });
+    assert_eq!(result.ihr, CSha256Midstate { s: *target_ihr });
     assert_eq!(result.cost_bound, cost_bound);
     assert_eq!(result.eval_result, target_result);
 }
@@ -118,7 +118,7 @@ pub fn run_program(
     let mut result = TestOutput {
         amr: CSha256Midstate::default(),
         cmr: CSha256Midstate::default(),
-        imr: CSha256Midstate::default(),
+        ihr: CSha256Midstate::default(),
         cost_bound: 0,
         eval_result: SimplicityErr::NoError,
     };
@@ -169,10 +169,10 @@ pub fn run_program(
             return Ok(result);
         }
 
-        // 6. Check IMR
-        simplicity_verifyNoDuplicateIdentityRoots(&mut result.imr, dag, type_dag, len)
+        // 6. Check IHR
+        simplicity_verifyNoDuplicateIdentityHashes(&mut result.ihr, dag, type_dag, len)
             .into_result()?;
-        if test_up_to <= TestUpTo::ComputeImr {
+        if test_up_to <= TestUpTo::ComputeIhr {
             return Ok(result);
         }
 
@@ -289,7 +289,7 @@ pub fn parse_root(ptr: &[u32; 8]) -> [u8; 32] {
 pub struct TestData {
     pub cmr: [u8; 32],
     pub amr: [u8; 32],
-    pub imr: [u8; 32],
+    pub ihr: [u8; 32],
     pub prog: Vec<u8>,
     pub witness: Vec<u8>,
     pub cost: ubounded,
@@ -304,7 +304,7 @@ mod test_data {
             TestData {
                 cmr: parse_root(&ffi::schnorr0_cmr),
                 amr: parse_root(&ffi::schnorr0_amr),
-                imr: parse_root(&ffi::schnorr0_imr),
+                ihr: parse_root(&ffi::schnorr0_ihr),
                 prog: slice::from_raw_parts(ffi::schnorr0.as_ptr(), ffi::sizeof_schnorr0).into(),
                 witness: slice::from_raw_parts(
                     ffi::schnorr0_witness.as_ptr(),
@@ -321,7 +321,7 @@ mod test_data {
             TestData {
                 cmr: parse_root(&ffi::schnorr6_cmr),
                 amr: parse_root(&ffi::schnorr6_amr),
-                imr: parse_root(&ffi::schnorr6_imr),
+                ihr: parse_root(&ffi::schnorr6_ihr),
                 prog: slice::from_raw_parts(ffi::schnorr6.as_ptr(), ffi::sizeof_schnorr6).into(),
                 witness: slice::from_raw_parts(
                     ffi::schnorr6_witness.as_ptr(),
@@ -338,7 +338,7 @@ mod test_data {
             TestData {
                 cmr: parse_root(&ffi::ctx8Pruned_cmr),
                 amr: parse_root(&ffi::ctx8Pruned_amr),
-                imr: parse_root(&ffi::ctx8Pruned_imr),
+                ihr: parse_root(&ffi::ctx8Pruned_ihr),
                 prog: slice::from_raw_parts(ffi::ctx8Pruned.as_ptr(), ffi::sizeof_ctx8Pruned)
                     .into(),
                 witness: slice::from_raw_parts(
@@ -356,7 +356,7 @@ mod test_data {
             TestData {
                 cmr: parse_root(&ffi::ctx8Unpruned_cmr),
                 amr: parse_root(&ffi::ctx8Unpruned_amr),
-                imr: parse_root(&ffi::ctx8Unpruned_imr),
+                ihr: parse_root(&ffi::ctx8Unpruned_ihr),
                 prog: slice::from_raw_parts(ffi::ctx8Unpruned.as_ptr(), ffi::sizeof_ctx8Unpruned)
                     .into(),
                 witness: slice::from_raw_parts(
@@ -390,7 +390,7 @@ mod test_code {
                 &ffi::ctx8Pruned_witness,
                 &ffi::ctx8Pruned_amr,
                 &ffi::ctx8Pruned_cmr,
-                &ffi::ctx8Pruned_imr,
+                &ffi::ctx8Pruned_ihr,
                 ffi::ctx8Pruned_cost,
             );
         }
@@ -410,7 +410,7 @@ mod test_code {
                 SimplicityErr::AntiDoS,
                 &ffi::ctx8Unpruned_amr,
                 &ffi::ctx8Unpruned_cmr,
-                &ffi::ctx8Unpruned_imr,
+                &ffi::ctx8Unpruned_ihr,
                 ffi::ctx8Unpruned_cost,
             );
         }
@@ -426,7 +426,7 @@ mod test_code {
                 &ffi::schnorr0_witness,
                 &ffi::schnorr0_amr,
                 &ffi::schnorr0_cmr,
-                &ffi::schnorr0_imr,
+                &ffi::schnorr0_ihr,
                 ffi::schnorr0_cost,
             );
         }
@@ -443,7 +443,7 @@ mod test_code {
                 SimplicityErr::ExecJet,
                 &ffi::schnorr6_amr,
                 &ffi::schnorr6_cmr,
-                &ffi::schnorr6_imr,
+                &ffi::schnorr6_ihr,
                 ffi::schnorr6_cost,
             );
         }
