@@ -7,7 +7,7 @@ repository = "https://github.com/BlockstreamResearch/rust-simplicity/"
 documentation = "https://docs.rs/simplicity-sys/"
 description = "FFI bindings to libsimplicity"
 edition = "2021"
-rust-version = "1.63.0"
+rust-version = "1.78.0"
 
 [build-dependencies]
 cc = "1.0.83"

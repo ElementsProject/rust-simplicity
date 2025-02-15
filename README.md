@@ -5,7 +5,7 @@ Under development....
 
 # Minimum Supported Rust Version
 
-The MSRV of this crate is **1.63.0**.
+The MSRV of this crate is **1.78.0**.
 
 # Updating jets code
 

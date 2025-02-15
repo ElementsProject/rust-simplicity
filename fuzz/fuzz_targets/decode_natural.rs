@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
 
-use honggfuzz::fuzz;
+#![cfg_attr(fuzzing, no_main)]
 
-use simplicity::encode_natural;
-use simplicity::{BitIter, BitWriter};
-
+#[cfg(any(fuzzing, test))]
 fn do_test(data: &[u8]) {
+    use simplicity::encode_natural;
+    use simplicity::{BitIter, BitWriter};
+
     let mut iter = BitIter::new(data.iter().cloned());
 
     if let Ok(natural) = iter.read_natural(None) {
@@ -28,37 +29,21 @@ fn do_test(data: &[u8]) {
     }
 }
 
-fn main() {
-    loop {
-        fuzz!(|data| {
-            do_test(data);
-        });
-    }
-}
+#[cfg(fuzzing)]
+libfuzzer_sys::fuzz_target!(|data| do_test(data));
+
+#[cfg(not(fuzzing))]
+fn main() {}
 
 #[cfg(test)]
 mod tests {
-    fn extend_vec_from_hex(hex: &str, out: &mut Vec<u8>) {
-        let mut b = 0;
-        for (idx, c) in hex.as_bytes().iter().enumerate() {
-            b <<= 4;
-            match *c {
-                b'A'..=b'F' => b |= c - b'A' + 10,
-                b'a'..=b'f' => b |= c - b'a' + 10,
-                b'0'..=b'9' => b |= c - b'0',
-                _ => panic!("Bad hex"),
-            }
-            if (idx & 1) == 1 {
-                out.push(b);
-                b = 0;
-            }
-        }
-    }
+    use base64::Engine;
 
     #[test]
     fn duplicate_crash() {
-        let mut a = Vec::new();
-        extend_vec_from_hex("00000", &mut a);
-        super::do_test(&a);
+        let data = base64::prelude::BASE64_STANDARD
+            .decode("Cg==")
+            .expect("base64 should be valid");
+        super::do_test(&data);
     }
 }

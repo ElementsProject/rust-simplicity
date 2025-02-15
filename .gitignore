@@ -10,6 +10,8 @@ Cargo.lock
 #fuzz
 fuzz/hfuzz_target
 fuzz/hfuzz_workspace
+fuzz/artifacts
+fuzz/corpus
 
 #IntelliJ project files
 .idea

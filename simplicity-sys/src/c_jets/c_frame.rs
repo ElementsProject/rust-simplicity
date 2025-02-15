@@ -53,7 +53,7 @@ impl CFrameItem {
 
 /// Number of UWORDs required to hold n bits
 pub fn uword_width(n_bits: usize) -> usize {
-    (n_bits + 8 * mem::size_of::<UWORD>() - 1) / (8 * mem::size_of::<UWORD>())
+    n_bits.div_ceil(8 * mem::size_of::<UWORD>())
 }
 
 /// Number of bytes required to hold n bits

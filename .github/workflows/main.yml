@@ -54,7 +54,7 @@ jobs:
           - stable
           - beta
           - nightly
-          - 1.63.0
+          - 1.78.0
     steps:
       - name: Checkout Crate
         uses: actions/checkout@v4

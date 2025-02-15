@@ -23,9 +23,6 @@ decode_program,
 parse_human,
         ]
     steps:
-      - name: Install test dependencies
-        run: sudo apt-get update -y && sudo apt-get install -y binutils-dev libunwind8-dev libcurl4-openssl-dev libelf-dev libdw-dev cmake gcc libiberty-dev
-
       - name: Checkout Crate
         uses: actions/checkout@v4
 
@@ -38,15 +35,18 @@ parse_human,
             fuzz/target
             target
           key: cache-${{ matrix.target }}-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
+
       - name: Install Toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: '1.65.0'
+          toolchain: nightly-2024-07-01
+          components: "llvm-tools-preview"
+
+      - name: Install Dependencies
+        run: cargo update && cargo update -p cc --precise 1.0.83 && cargo install cargo-fuzz
 
       - name: Run Fuzz Target
-        run: |
-          echo "Using RUSTFLAGS $RUSTFLAGS"
-          cd fuzz && cargo update && cargo update -p cc --precise 1.0.83 && ./fuzz.sh "${{ matrix.fuzz_target }}"
+        run: ./fuzz/fuzz.sh "${{ matrix.fuzz_target }}"
 
       - name: Prepare Artifact
         run: echo "${{ matrix.fuzz_target }}" >executed_${{ matrix.fuzz_target }}

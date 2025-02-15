@@ -1,4 +1,4 @@
-msrv = "1.63.0"
+msrv = "1.78.0"
 
 # Default 250, not sure what units. But it does not like the generic node stuff.
 type-complexity-threshold = 1000
